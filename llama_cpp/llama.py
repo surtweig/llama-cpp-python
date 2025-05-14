@@ -909,8 +909,19 @@ class Llama:
 
         # Eval and sample
         while True:
+            if hasattr(self, "abort_callback") and callable(self.abort_callback):
+                if self.abort_callback():
+                    print("Aborting outer loop from callback.")
+                    return
+
             self.eval(tokens)
             while sample_idx < self.n_tokens:
+
+                if hasattr(self, "abort_callback") and callable(self.abort_callback):
+                    if self.abort_callback():
+                        print("Aborting generation from Python callback.")
+                        return  # Exit generation cleanly
+
                 token = self.sample(
                     top_k=top_k,
                     top_p=top_p,
